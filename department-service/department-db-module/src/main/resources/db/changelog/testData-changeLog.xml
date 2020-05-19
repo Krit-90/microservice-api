@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd ">
+
+    <changeSet id="GAbdulaev-2" author="GAbdulaev">
+        <insert tableName="departments">
+            <column name="id" value="1"/>
+            <column name="title" value="Main office"/>
+            <column name="creation_date" value="2020-04-30"/>
+            <column name="head_department_id"/>
+        </insert>
+        <insert tableName="departments">
+            <column name="id" value="2"/>
+            <column name="title" value="IT"/>
+            <column name="creation_date" value="2020-04-30"/>
+            <column name="head_department_id" value="1"/>
+        </insert>
+        <insert tableName="departments">
+            <column name="id" value="3"/>
+            <column name="title" value="Security"/>
+            <column name="creation_date" value="2020-04-30"/>
+            <column name="head_department_id" value="1"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
