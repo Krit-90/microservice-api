@@ -1,9 +1,9 @@
 package com.epam.company.service.impl;
 
-import com.epam.dto.EmployeeDto;
+import com.epam.company.util.DepartmentDataCaller;
+import com.epam.company.dto.EmployeeDto;
 import com.epam.company.entity.Employee;
 import com.epam.company.exception.NoSuchElementInDBException;
-import com.epam.company.exception.ValidationException;
 import lombok.NonNull;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,47 +14,38 @@ import com.epam.company.service.EmployeeService;
 import com.epam.company.util.MapperEmployee;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
+import javax.validation.Validator;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private final RestTemplate restTemplate;
+    private final DepartmentDataCaller departmentDataCaller;
+    private final Validator validator;
     private final EmployeeRepository employeeRepository;
     private final MapperEmployee mapperEmployee;
-    private final String DEPARTMENT_URL = "http://department-service/departments/";
 
     @Autowired
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, RestTemplate restTemplate) {
+    public EmployeeServiceImpl(DepartmentDataCaller departmentDataCaller, Validator validator,
+                               EmployeeRepository employeeRepository, RestTemplate restTemplate) {
+        this.departmentDataCaller = departmentDataCaller;
+        this.validator = validator;
         this.employeeRepository = employeeRepository;
-        this.restTemplate = restTemplate;
         this.mapperEmployee = Mappers.getMapper(MapperEmployee.class);
     }
 
-    public EmployeeDto addEmployee(@NonNull EmployeeDto employeeDto) {
-        validateOrThrow(employeeDto);
-        if (employeeDto.getFiredDate() != null) {
-            throw new ValidationException("При создании не должно быть даты увольения");
-        }
-        Employee employee = mapperEmployee.DtoToEmployee(employeeDto);
-        employee.setEmploymentDate(LocalDate.now());
-        employeeDto = mapperEmployee.employeeToDto(employeeRepository.save(employee));
-        return employeeDto;
-    }
-
     @Override
-    public EmployeeDto updateEmployee(@NonNull EmployeeDto employeeDto) {
-        employeeRepository.findById(employeeDto.getId()).orElseThrow(() -> new NoSuchElementInDBException("Работник не найден"));
+    public EmployeeDto addOrUpdateEmployee(@NonNull EmployeeDto employeeDto) {
+        if (employeeDto.getId() != null) {
+            employeeRepository.findById(employeeDto.getId()).orElseThrow(() -> new NoSuchElementInDBException("Работник не найден"));
+        }
         validateOrThrow(employeeDto);
-        if (employeeDto.getEmploymentDate().isAfter(employeeDto.getFiredDate())) {
-            throw new ValidationException("Дата увольнения, должна быть после приема на работу");
-        }
         Employee employee = mapperEmployee.DtoToEmployee(employeeDto);
-        if (employee.getFiredDate() != null) {
-            employee.setDepartmentId(null);
-        }
         employeeDto = mapperEmployee.employeeToDto(employeeRepository.save(employee));
         return employeeDto;
     }
@@ -90,8 +81,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDto changeDepartmentOfEmployee(@NonNull Long employeeId, @NonNull Long newDepartmentId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NoSuchElementInDBException("Работник не найден"));
-        Boolean isDepartmentExist = restTemplate
-                .getForObject(DEPARTMENT_URL + newDepartmentId + "/is-exist", Boolean.class);
+        Boolean isDepartmentExist = departmentDataCaller.isDepartmentExist(newDepartmentId);
         if (isDepartmentExist != null && !isDepartmentExist) {
             throw new NoSuchElementInDBException("Департамент не найден");
         }
@@ -105,8 +95,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     @Override
     public void changeDepartmentOfAllEmployeeFromSame(@NonNull Long oldDepartmentId, @NonNull Long newDepartmentId) {
-        Boolean isDepartmentExist = restTemplate
-                .getForObject(DEPARTMENT_URL + oldDepartmentId + "/is-exist", Boolean.class);
+        Boolean isDepartmentExist = departmentDataCaller.isDepartmentExist(oldDepartmentId);
         if (isDepartmentExist != null && !isDepartmentExist) {
             throw new NoSuchElementInDBException("Департамент не найден");
         }
@@ -147,11 +136,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.countIdByDepartmentId(id);
     }
 
-    private void validateOrThrow(EmployeeDto employeeDto) {
-        Boolean isDepartmentExist = restTemplate
-                .getForObject(DEPARTMENT_URL + employeeDto.getDepartmentId() + "/is-exist", Boolean.class);
-        if (isDepartmentExist != null && !isDepartmentExist) {
+    private Set<ConstraintViolation<EmployeeDto>> validateOrThrow(EmployeeDto employeeDto) {
+        Set<ConstraintViolation<EmployeeDto>> violations = validator.validate(employeeDto);
+        Boolean isDepartmentExist = departmentDataCaller.isDepartmentExist(employeeDto.getDepartmentId());
+        if (!isDepartmentExist) {
             throw new ValidationException("Данного депаратмента не существует");
+        }
+        if (employeeDto.getFiredDate() != null) {
+            throw new ValidationException("При создании или обновлении не должно быть даты увольения");
         }
         if (employeeDto.getBoss() && employeeRepository.countBossOfDepartment(employeeDto.getDepartmentId()) > 0) {
             throw new ValidationException("Может быть лишь один руководитель");
@@ -164,5 +156,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employeeDto.getEmploymentDate().isBefore(employeeDto.getBirthDate())) {
             throw new ValidationException("Дата приема на работу, должна быть после дня рождения");
         }
+        return violations;
     }
+
 }

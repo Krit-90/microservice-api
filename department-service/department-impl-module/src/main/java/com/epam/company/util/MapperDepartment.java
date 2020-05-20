@@ -1,7 +1,7 @@
 package com.epam.company.util;
 
-import com.epam.dto.DepartmentDto;
-import com.epam.dto.DepartmentDtoReceive;
+import com.epam.company.dto.DepartmentDto;
+import com.epam.company.dto.DepartmentDtoReceive;
 import com.epam.company.entity.Department;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

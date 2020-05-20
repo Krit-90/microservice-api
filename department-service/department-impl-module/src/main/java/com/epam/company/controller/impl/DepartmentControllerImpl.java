@@ -1,9 +1,9 @@
 package com.epam.company.controller.impl;
 
 import com.epam.company.controller.DepartmentController;
-import com.epam.dto.DepartmentDto;
-import com.epam.dto.DepartmentDtoReceive;
-import com.epam.dto.EmployeeDto;
+import com.epam.company.dto.DepartmentDto;
+import com.epam.company.dto.DepartmentDtoReceive;
+import com.epam.company.dto.EmployeeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

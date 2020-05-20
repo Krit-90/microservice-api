@@ -1,6 +1,6 @@
 package com.epam.company.util;
 
-import com.epam.dto.EmployeeDto;
+import com.epam.company.dto.EmployeeDto;
 import com.epam.company.entity.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

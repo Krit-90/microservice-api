@@ -1,7 +1,7 @@
 package com.epam.company.controller.impl;
 
 import com.epam.company.controller.EmployeeController;
-import com.epam.dto.EmployeeDto;
+import com.epam.company.dto.EmployeeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,12 +27,12 @@ public class EmployeeControllerImpl implements EmployeeController {
 
     @Override
     public EmployeeDto addEmployee(EmployeeDto employeeDto) {
-        return employeeService.addEmployee(employeeDto);
+        return employeeService.addOrUpdateEmployee(employeeDto);
     }
 
     @Override
     public EmployeeDto updateEmployee(EmployeeDto employeeDto) {
-        return employeeService.updateEmployee(employeeDto);
+        return employeeService.addOrUpdateEmployee(employeeDto);
     }
 
     @Override

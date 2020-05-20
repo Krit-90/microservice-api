@@ -1,9 +1,9 @@
 package com.epam.company.service;
 
 
-import com.epam.dto.DepartmentDto;
-import com.epam.dto.DepartmentDtoReceive;
-import com.epam.dto.EmployeeDto;
+import com.epam.company.dto.DepartmentDto;
+import com.epam.company.dto.DepartmentDtoReceive;
+import com.epam.company.dto.EmployeeDto;
 
 import java.math.BigDecimal;
 import java.util.List;

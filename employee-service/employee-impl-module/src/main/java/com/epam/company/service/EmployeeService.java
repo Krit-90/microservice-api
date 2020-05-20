@@ -1,26 +1,19 @@
 package com.epam.company.service;
 
-import com.epam.dto.EmployeeDto;
+import com.epam.company.dto.EmployeeDto;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface EmployeeService {
-    /**
-     * Добавление сотрудника
-     *
-     * @param employeeDto Данные о новом сотруднике
-     * @return Дто добавленного сотрудника
-     */
-    EmployeeDto addEmployee(EmployeeDto employeeDto);
 
     /**
-     * Редактирование сведений о сотруднике департамента
+     * Добавление или редактирование сотрудника
      *
-     * @param employeeDto Дто сотрудника из которого берем сведения
-     * @return Данные отредактированного сотрудника
+     * @param employeeDto Данные о новом сотруднике или измененном
+     * @return Дто добавленного или отредактированного сотрудника
      */
-    EmployeeDto updateEmployee(EmployeeDto employeeDto);
+    EmployeeDto addOrUpdateEmployee(EmployeeDto employeeDto);
 
     /**
      * Удаление из базы

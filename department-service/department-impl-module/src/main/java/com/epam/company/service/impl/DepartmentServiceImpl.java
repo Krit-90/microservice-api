@@ -1,16 +1,12 @@
 package com.epam.company.service.impl;
 
-import com.epam.dto.DepartmentDto;
-import com.epam.dto.DepartmentDtoReceive;
-import com.epam.dto.EmployeeDto;
+import com.epam.company.util.EmployeeDataCaller;
+import com.epam.company.dto.*;
 import com.epam.company.entity.Department;
 import com.epam.company.exception.NoSuchElementInDBException;
-import com.epam.company.exception.ValidationException;
 import lombok.NonNull;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +14,8 @@ import org.springframework.web.client.RestTemplate;
 import com.epam.company.repository.DepartmentRepository;
 import com.epam.company.service.DepartmentService;
 import com.epam.company.util.MapperDepartment;
+
+import javax.validation.ValidationException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -28,11 +26,12 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final RestTemplate restTemplate;
     private final DepartmentRepository departmentRepository;
     private final MapperDepartment mapperDepartment;
-
+    private final EmployeeDataCaller employeeDataCaller;
     @Autowired
-    public DepartmentServiceImpl(RestTemplate restTemplate,DepartmentRepository departmentRepository) {
+    public DepartmentServiceImpl(RestTemplate restTemplate, DepartmentRepository departmentRepository, EmployeeDataCaller employeeDataCaller) {
         this.restTemplate = restTemplate;
         this.departmentRepository = departmentRepository;
+        this.employeeDataCaller = employeeDataCaller;
         this.mapperDepartment = Mappers.getMapper(MapperDepartment.class);
     }
 
@@ -156,14 +155,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public List<EmployeeDto> getEmployeesOfDepartment(@NonNull Long id) {
         departmentRepository.findById(id).orElseThrow(() -> new NoSuchElementInDBException("Департамент не найден"));
-        ResponseEntity<List<EmployeeDto>> response = restTemplate.exchange(
-                        EMPLOYEE_URL + id + "/employees",
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<List<EmployeeDto>>() {
-                        });
-
-        return response.getBody();
+        return employeeDataCaller.getEmployees(id);
     }
 
     @Override
@@ -173,14 +165,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private DepartmentDto enrichDepartmentDto(Department department) {
         DepartmentDto departmentDto = mapperDepartment.departmentToDto(department);
-        departmentDto.setBoss(restTemplate
-                .getForObject(EMPLOYEE_URL + department.getId() + "/boss", EmployeeDto.class));
+        departmentDto.setBoss(employeeDataCaller.getBoss(department));
 
-        departmentDto.setCountEmployee(restTemplate
-                .getForObject(EMPLOYEE_URL + department.getId() + "/count-employees", Integer.class));
+        departmentDto.setCountEmployee(employeeDataCaller.getCountEmployees(department));
         return departmentDto;
     }
-
 
     private static class DepartmentIterator implements Iterator<Department> {
         Department nextDepartment;

@@ -1,12 +1,13 @@
 package com.epam.company.util;
 
 import com.epam.company.exception.NoSuchElementInDBException;
-import com.epam.company.exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import javax.validation.ValidationException;
+import java.net.ConnectException;
 
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
@@ -20,6 +21,12 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<ErrorInfo> handleValidationException(ValidationException ex) {
         return new ResponseEntity<>(new ErrorInfo(ex.getLocalizedMessage())
                 , HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    @ExceptionHandler(ConnectException.class)
+    protected ResponseEntity<ErrorInfo> handleConnectException(ConnectException ex) {
+        return new ResponseEntity<>(new ErrorInfo(ex.getLocalizedMessage())
+                , HttpStatus.BAD_GATEWAY);
     }
 
     private class ErrorInfo {

@@ -1,6 +1,6 @@
 package com.epam.company.controller;
 
-import com.epam.dto.EmployeeDto;
+import com.epam.company.dto.EmployeeDto;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
