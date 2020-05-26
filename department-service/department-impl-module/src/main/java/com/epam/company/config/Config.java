@@ -16,10 +16,5 @@ public class Config {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         return factory.getValidator();
     }
-    @Bean
-    @LoadBalanced
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 
 }

@@ -1,5 +1,8 @@
 package com.epam.company.entity;
 
+import com.epam.company.dto.JobTitle;
+import com.epam.company.dto.Sex;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -28,7 +31,7 @@ public class Employee {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column
-    private  Sex gender;
+    private Sex gender;
     @NotNull
     @Column
     private LocalDate birthDate;
@@ -64,6 +67,25 @@ public class Employee {
         this.firstName = firstName;
         this.patronymic = patronymic;
         this.gender = gender;
+    }
+
+    public Employee(Long id, String lastName, String firstName, String patronymic, Sex gender,LocalDate birthDate,
+                   String phone,String email, LocalDate employmentDate, LocalDate firedDate, JobTitle jobTitle,
+                    BigDecimal salary, Boolean isBoss, Long departmentId) {
+        this.id = id;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.patronymic = patronymic;
+        this.gender = gender;
+        this.birthDate = birthDate;
+        this.phone = phone;
+        this.email = email;
+        this.employmentDate = employmentDate;
+        this.firedDate = firedDate;
+        this.jobTitle = jobTitle;
+        this.salary = salary;
+        this.isBoss = isBoss;
+        this.departmentId = departmentId;
     }
 
     public Long getId() {

@@ -14,8 +14,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByDepartmentId(Long id);
 
-    Employee findByDepartmentIdAndIsBossTrue(Long id);
-
     int countIdByDepartmentId(Long departmentId);
 
     @Query(value = "Select b From Employee b Where b.isBoss = true and b.departmentId = :departmentId")

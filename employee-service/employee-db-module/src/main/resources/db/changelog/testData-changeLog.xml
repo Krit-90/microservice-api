@@ -10,7 +10,6 @@
 
     <changeSet id="GAbdulaev-2" author="GAbdulaev">
         <insert tableName="employees">
-            <column name="id" value="1"/>
             <column name="last_name" value="Попов"/>
             <column name="first_name" value="Влад"/>
             <column name="patronymic" value="Александрович"/>
@@ -26,7 +25,6 @@
             <column name="department_id" value="1"/>
         </insert>
         <insert tableName="employees">
-            <column name="id" value="2"/>
             <column name="last_name" value="Сидоров"/>
             <column name="first_name" value="Петр"/>
             <column name="patronymic" value="Владимирович"/>
@@ -42,7 +40,6 @@
             <column name="department_id" value="1"/>
         </insert>
         <insert tableName="employees">
-            <column name="id" value="3"/>
             <column name="last_name" value="Петров"/>
             <column name="first_name" value="Юрий"/>
             <column name="patronymic" value="Семенович"/>
@@ -58,7 +55,6 @@
             <column name="department_id" value="2"/>
         </insert>
         <insert tableName="employees">
-            <column name="id" value="4"/>
             <column name="last_name" value="Леонов"/>
             <column name="first_name" value="Алексей"/>
             <column name="patronymic" value="Валерьевич"/>
@@ -74,7 +70,6 @@
             <column name="department_id" value="2"/>
         </insert>
         <insert tableName="employees">
-            <column name="id" value="5"/>
             <column name="last_name" value="Кузнецов"/>
             <column name="first_name" value="Алексей"/>
             <column name="patronymic" value="Петрович"/>
@@ -90,7 +85,6 @@
             <column name="department_id" value="3"/>
         </insert>
         <insert tableName="employees">
-            <column name="id" value="6"/>
             <column name="last_name" value="Рубцова"/>
             <column name="first_name" value="Анастасия"/>
             <column name="patronymic" value="Кирилловна"/>

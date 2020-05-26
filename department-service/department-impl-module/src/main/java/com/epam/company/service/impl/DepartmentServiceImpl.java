@@ -5,12 +5,8 @@ import com.epam.company.dto.*;
 import com.epam.company.entity.Department;
 import com.epam.company.exception.NoSuchElementInDBException;
 import lombok.NonNull;
-import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import com.epam.company.repository.DepartmentRepository;
 import com.epam.company.service.DepartmentService;
 import com.epam.company.util.MapperDepartment;
@@ -19,20 +15,17 @@ import javax.validation.ValidationException;
 import java.math.BigDecimal;
 import java.util.*;
 
-@Transactional
 @Service
 public class DepartmentServiceImpl implements DepartmentService {
-    private final String EMPLOYEE_URL = "http://employee-service/employees/";
-    private final RestTemplate restTemplate;
     private final DepartmentRepository departmentRepository;
     private final MapperDepartment mapperDepartment;
     private final EmployeeDataCaller employeeDataCaller;
     @Autowired
-    public DepartmentServiceImpl(RestTemplate restTemplate, DepartmentRepository departmentRepository, EmployeeDataCaller employeeDataCaller) {
-        this.restTemplate = restTemplate;
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, MapperDepartment mapperDepartment,
+                                 EmployeeDataCaller employeeDataCaller) {
         this.departmentRepository = departmentRepository;
+        this.mapperDepartment = mapperDepartment;
         this.employeeDataCaller = employeeDataCaller;
-        this.mapperDepartment = Mappers.getMapper(MapperDepartment.class);
     }
 
     @Override
@@ -73,7 +66,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             return;
         }
         if (!getEmployeesOfDepartment(id).isEmpty()) {
-            throw new ValidationException("Невозможно удаление департамента при наличии руботников");
+            throw new ValidationException("Невозможно удаление департамента при наличии работников");
         }
         departmentRepository.deleteById(id);
     }
@@ -143,15 +136,13 @@ public class DepartmentServiceImpl implements DepartmentService {
     public BigDecimal getSumOfSalary(@NonNull Long id) {
         BigDecimal sumOfSalary = new BigDecimal(0);
         departmentRepository.findById(id).orElseThrow(() -> new NoSuchElementInDBException("Департамент не найден"));
-/*        BigDecimal sumOfSalary1 = getEmployeesOfDepartment(id).stream()
-                .map(EmployeeDto::getSalary)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);*/
         List<EmployeeDto> employees = getEmployeesOfDepartment(id);
         for (EmployeeDto employee : employees) {
             sumOfSalary = sumOfSalary.add(employee.getSalary());
         }
         return sumOfSalary;
     }
+
     @Override
     public List<EmployeeDto> getEmployeesOfDepartment(@NonNull Long id) {
         departmentRepository.findById(id).orElseThrow(() -> new NoSuchElementInDBException("Департамент не найден"));

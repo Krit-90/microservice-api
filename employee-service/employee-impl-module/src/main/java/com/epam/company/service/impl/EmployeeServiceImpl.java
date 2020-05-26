@@ -1,19 +1,16 @@
 package com.epam.company.service.impl;
 
-import com.epam.company.util.DepartmentDataCaller;
 import com.epam.company.dto.EmployeeDto;
+import com.epam.company.util.DepartmentDataCaller;
 import com.epam.company.entity.Employee;
 import com.epam.company.exception.NoSuchElementInDBException;
 import lombok.NonNull;
-import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.epam.company.repository.EmployeeRepository;
 import com.epam.company.service.EmployeeService;
 import com.epam.company.util.MapperEmployee;
-import org.springframework.web.client.RestTemplate;
-
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
@@ -32,17 +29,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     public EmployeeServiceImpl(DepartmentDataCaller departmentDataCaller, Validator validator,
-                               EmployeeRepository employeeRepository, RestTemplate restTemplate) {
+                               EmployeeRepository employeeRepository, MapperEmployee mapperEmployee) {
         this.departmentDataCaller = departmentDataCaller;
         this.validator = validator;
         this.employeeRepository = employeeRepository;
-        this.mapperEmployee = Mappers.getMapper(MapperEmployee.class);
+        this.mapperEmployee = mapperEmployee;
     }
-
     @Override
     public EmployeeDto addOrUpdateEmployee(@NonNull EmployeeDto employeeDto) {
         if (employeeDto.getId() != null) {
-            employeeRepository.findById(employeeDto.getId()).orElseThrow(() -> new NoSuchElementInDBException("Работник не найден"));
+            employeeRepository.findById(employeeDto.getId())
+                    .orElseThrow(() -> new NoSuchElementInDBException("Работник не найден"));
         }
         validateOrThrow(employeeDto);
         Employee employee = mapperEmployee.DtoToEmployee(employeeDto);
@@ -95,10 +92,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     @Override
     public void changeDepartmentOfAllEmployeeFromSame(@NonNull Long oldDepartmentId, @NonNull Long newDepartmentId) {
-        Boolean isDepartmentExist = departmentDataCaller.isDepartmentExist(oldDepartmentId);
-        if (isDepartmentExist != null && !isDepartmentExist) {
-            throw new NoSuchElementInDBException("Департамент не найден");
-        }
         employeeRepository.findByDepartmentId(oldDepartmentId)
                 .forEach(employee -> changeDepartmentOfEmployee(employee.getId(), newDepartmentId));
     }
@@ -138,22 +131,28 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private Set<ConstraintViolation<EmployeeDto>> validateOrThrow(EmployeeDto employeeDto) {
         Set<ConstraintViolation<EmployeeDto>> violations = validator.validate(employeeDto);
+        if (!violations.isEmpty()) {
+            StringBuilder error = new StringBuilder();
+            violations.forEach(exc -> error.append(exc.getMessage()).
+                    append(" ").
+                    append(exc.getPropertyPath()).append("; "));
+            throw new ValidationException(String.valueOf(error));
+        }
         Boolean isDepartmentExist = departmentDataCaller.isDepartmentExist(employeeDto.getDepartmentId());
         if (!isDepartmentExist) {
-            throw new ValidationException("Данного депаратмента не существует");
+            throw new ValidationException("Данного депаратамента не существует");
         }
         if (employeeDto.getFiredDate() != null) {
-            throw new ValidationException("При создании или обновлении не должно быть даты увольения");
+            throw new ValidationException("При создании или обновлении не должно быть даты увольнения");
         }
         if (employeeDto.getBoss() && employeeRepository.countBossOfDepartment(employeeDto.getDepartmentId()) > 0) {
             throw new ValidationException("Может быть лишь один руководитель");
         }
-        if (!employeeDto.getBoss() && employeeDto.getSalary() != null && employeeDto.getSalary().compareTo(
+        if (!employeeDto.getBoss() && employeeDto.getSalary().compareTo(
                 employeeRepository.getBossOfDepartment(employeeDto.getDepartmentId()).getSalary()) > 0) {
             throw new ValidationException("Зарплата не может быть больше, чем у руководителя");
         }
-        if (employeeDto.getEmploymentDate() != null && employeeDto.getBirthDate() != null &&
-                employeeDto.getEmploymentDate().isBefore(employeeDto.getBirthDate())) {
+        if (employeeDto.getEmploymentDate().isBefore(employeeDto.getBirthDate())) {
             throw new ValidationException("Дата приема на работу, должна быть после дня рождения");
         }
         return violations;

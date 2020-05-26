@@ -23,10 +23,12 @@ public class EmployeeDto {
     @NotNull
     private LocalDate birthDate;
     @NotNull
+    @Pattern(regexp = "^[0-9\\-+()]+")
     private String phone;
     @NotNull
     @Email
     private String email;
+    @NotNull
     private LocalDate employmentDate;
     private LocalDate firedDate;
     @NotNull
@@ -35,7 +37,7 @@ public class EmployeeDto {
     @NotNull
     private BigDecimal salary;
     private Boolean isBoss;
-    private String departmentTitle;
+    @NotNull
     private Long departmentId;
 
     public EmployeeDto() {
@@ -61,7 +63,7 @@ public class EmployeeDto {
 
     public EmployeeDto(String lastName, String firstName, String patronymic, Sex gender, LocalDate birthDate,
                        String phone, String email, LocalDate employmentDate, LocalDate firedDate, JobTitle jobTitle,
-                       BigDecimal salary, Boolean isBoss, String departmentTitle, Long departmentId) {
+                       BigDecimal salary, Boolean isBoss, Long departmentId) {
         this.lastName = lastName;
         this.firstName = firstName;
         this.patronymic = patronymic;
@@ -74,7 +76,6 @@ public class EmployeeDto {
         this.jobTitle = jobTitle;
         this.salary = salary;
         this.isBoss = isBoss;
-        this.departmentTitle = departmentTitle;
         this.departmentId = departmentId;
     }
 
@@ -190,13 +191,6 @@ public class EmployeeDto {
         isBoss = boss;
     }
 
-    public String getDepartmentTitle() {
-        return departmentTitle;
-    }
-
-    public void setDepartmentTitle(String departmentTitle) {
-        this.departmentTitle = departmentTitle;
-    }
 
 
     @Override
@@ -214,7 +208,6 @@ public class EmployeeDto {
         sb.append(", jobTitle=").append(jobTitle);
         sb.append(", salary=").append(salary);
         sb.append(", isBoss=").append(isBoss);
-        sb.append(", department=").append(departmentTitle);
         sb.append('}');
         return sb.toString();
     }

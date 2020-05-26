@@ -18,9 +18,4 @@ public class Config {
         return factory.getValidator();
     }
 
-    @Bean
-    @LoadBalanced
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 }
