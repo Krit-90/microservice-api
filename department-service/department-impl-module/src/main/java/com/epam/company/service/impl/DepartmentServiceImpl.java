@@ -165,7 +165,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     private static class DepartmentIterator implements Iterator<Department> {
         Department nextDepartment;
         Queue<Department> queue = new LinkedList<>();
-
         public DepartmentIterator(Department department) {
             queue.addAll(department.getSubDepartment());
         }

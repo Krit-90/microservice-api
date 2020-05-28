@@ -31,6 +31,12 @@ public class Department {
         this.title = title;
     }
 
+    public Department(Long id, String title, LocalDate creationDate, Department headDepartment) {
+        this.id = id;
+        this.title = title;
+        this.creationDate = creationDate;
+        this.headDepartment = headDepartment;
+    }
 
     public Long getId() {
         return id;
