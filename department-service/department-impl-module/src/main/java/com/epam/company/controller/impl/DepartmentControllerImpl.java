@@ -4,10 +4,10 @@ import com.epam.company.controller.DepartmentController;
 import com.epam.company.dto.DepartmentDto;
 import com.epam.company.dto.DepartmentDtoReceive;
 import com.epam.company.dto.EmployeeDto;
+import com.epam.company.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.epam.company.service.DepartmentService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,8 +26,8 @@ public class DepartmentControllerImpl implements DepartmentController {
         return departmentService.getDepartmentInfoById(id);
     }
 
-    public DepartmentDtoReceive addDepartment(DepartmentDtoReceive departmentDto) {
-        return departmentService.addDepartment(departmentDto);
+    public DepartmentDtoReceive addDepartment(DepartmentDtoReceive departmentDtoReceive) {
+        return departmentService.addDepartment(departmentDtoReceive);
     }
 
     @Override

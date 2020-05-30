@@ -1,6 +1,7 @@
 package com.epam.company.controller;
 
 import com.epam.company.dto.EmployeeDto;
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @RequestMapping("employees")
 @RestController
+@Api(tags = "Employees API")
 public interface EmployeeController {
 
     /**

@@ -3,6 +3,7 @@ package com.epam.company.controller;
 import com.epam.company.dto.DepartmentDto;
 import com.epam.company.dto.DepartmentDtoReceive;
 import com.epam.company.dto.EmployeeDto;
+import io.swagger.annotations.Api;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +12,9 @@ import java.util.List;
 
 @RequestMapping("departments")
 @RestController
+@Api(tags = "Departments API")
 public interface DepartmentController {
+
     /**
      * Get-запрос по получению информации о департаменте
      *

@@ -14,7 +14,6 @@
     <groupId>com.epam</groupId>
     <artifactId>department-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-
     <packaging>pom</packaging>
     <modules>
         <module>department-db-module</module>
