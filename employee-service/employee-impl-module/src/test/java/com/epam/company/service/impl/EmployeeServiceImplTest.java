@@ -17,26 +17,43 @@ import javax.validation.ValidationException;
 import javax.validation.Validator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
 
 class EmployeeServiceImplTest {
 
-    public static final BigDecimal SALARY_BOSS = BigDecimal.valueOf(30000);
-    public static final long BOSS_ID = 1L;
-    public static final long DEPARTMENT_ID = 1L;
-    public static final long EMPLOYEE_ID = 3L;
-    public static final LocalDate FIRED_DATE = LocalDate.of(2009, 10, 10);
-    public static final LocalDate FIRED_DATE_BEFORE_EMPLOYEE_DATE = LocalDate.of(2008, 10, 10);
-    public static final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1975, 6, 21);
-    public static final LocalDate EMPLOYEE_EMPLOYMENT_DATE = LocalDate.of(2008, 11, 25);
-    public static final BigDecimal EMPLOYEE_SALARY = BigDecimal.valueOf(29000);
-    public static final Integer COUNT_EMPLOYEES = Integer.valueOf(2);
-    public static final String LAST_NAME = "Носков";
-    public static final String FIRST_NAME = "Николай";
-    public Employee boss;
-    public EmployeeDto bossDto;
+    private static final BigDecimal SALARY_BOSS = BigDecimal.valueOf(30000);
+    private static final long BOSS_ID = 1L;
+    private static final long DEPARTMENT_ID = 1L;
+    private static final long EMPLOYEE_ID = 3L;
+    private static final LocalDate FIRED_DATE = LocalDate.of(2009, 10, 10);
+    private static final LocalDate FIRED_DATE_BEFORE_EMPLOYEE_DATE = LocalDate.of(2008, 10, 10);
+    private static final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1975, 6, 21);
+    private static final LocalDate EMPLOYEE_EMPLOYMENT_DATE = LocalDate.of(2008, 11, 25);
+    private static final BigDecimal EMPLOYEE_SALARY = BigDecimal.valueOf(29000);
+    private static final Integer COUNT_EMPLOYEES = Integer.valueOf(2);
+    private static final String LAST_NAME = "Носков";
+    private static final String FIRST_NAME = "Николай";
+    private static final String EMPLOYEE_PHONE = "-7(900)900-77-77";
+    private static final String EMPLOYEE_EMAIL = "bloblo@gmail.com";
+    private static final String EMPLOYEE_PATRONYMIC = "Леонидович";
+    private static final String BOSS_LAST_NAME = "Сидоров";
+    private static final String BOSS_FIRST_NAME = "Петр";
+    private static final String BOSS_PATRONYMIC = "Сидорович";
+    private static final LocalDate BOSS_BIRTH_DATE = LocalDate.of(1987, 1, 1);
+    private static final String BOSS_PHONE = "+7(900)900-99-99";
+    private static final String BOSS_EMAIL = "bla@gmail.com";
+    private static final LocalDate BOSS_EMPLOYMENT_DATE = LocalDate.of(2010, 4, 10);
+    private static final Long NEW_DEPARTMENT_ID = 2L;
+    public static final int COUNT_OF_BOSS = 1;
+    private Employee boss;
+    private EmployeeDto bossDto;
+    private Employee testEmployee;
+    private EmployeeDto testEmployeeDto;
     @Mock
     EmployeeRepository employeeRepository;
     @Mock
@@ -53,66 +70,77 @@ class EmployeeServiceImplTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        boss = new Employee(BOSS_ID, "Сидоров", "Петр", "Сидорович",
-                Sex.MALE, LocalDate.of(1987, 1, 1),
-                "+7(900)900-99-99", "bla@gmail.com",
-                LocalDate.of(2010, 4, 10), null, JobTitle.BOSS,
-                SALARY_BOSS, true, DEPARTMENT_ID);
-        bossDto = new EmployeeDto(BOSS_ID, "Сидоров", "Петр", "Сидорович",
-                Sex.MALE, LocalDate.of(1987, 1, 1),
-                "+7(900)900-99-99", "bla@gmail.com",
-                LocalDate.of(2010, 4, 10), null, JobTitle.BOSS,
-                SALARY_BOSS, true);
+        testEmployee = new Employee(EMPLOYEE_ID, LAST_NAME, FIRST_NAME, EMPLOYEE_PATRONYMIC, Sex.MALE,
+                EMPLOYEE_BIRTH_DATE, EMPLOYEE_PHONE, EMPLOYEE_EMAIL, EMPLOYEE_EMPLOYMENT_DATE,
+                null, JobTitle.COMMON, EMPLOYEE_SALARY, false, DEPARTMENT_ID);
+
+        testEmployeeDto = new EmployeeDto(LAST_NAME, FIRST_NAME, EMPLOYEE_PATRONYMIC, Sex.MALE, EMPLOYEE_BIRTH_DATE,
+                EMPLOYEE_PHONE, EMPLOYEE_EMAIL, EMPLOYEE_EMPLOYMENT_DATE, null, JobTitle.COMMON,
+                EMPLOYEE_SALARY, false, DEPARTMENT_ID);
+
+        boss = new Employee(BOSS_ID, BOSS_LAST_NAME, BOSS_FIRST_NAME, BOSS_PATRONYMIC, Sex.MALE, BOSS_BIRTH_DATE,
+                BOSS_PHONE, BOSS_EMAIL, BOSS_EMPLOYMENT_DATE, null, JobTitle.BOSS, SALARY_BOSS, true,
+                DEPARTMENT_ID);
+
+        bossDto = new EmployeeDto(BOSS_ID, BOSS_LAST_NAME, BOSS_FIRST_NAME, BOSS_PATRONYMIC, Sex.MALE, BOSS_BIRTH_DATE,
+                BOSS_PHONE, BOSS_EMAIL, BOSS_EMPLOYMENT_DATE, null, JobTitle.BOSS, SALARY_BOSS,
+                true);
+
         bossDto.setDepartmentId(DEPARTMENT_ID);
 
-        Mockito.when(mapperEmployee.employeeToDto(boss)).thenReturn(bossDto);
+/*        Mockito.when(mapperEmployee.employeeToDto(boss)).thenReturn(bossDto);
         Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
         Mockito.when(employeeRepository.findById(BOSS_ID)).thenReturn(Optional.of(boss));
         Mockito.when(employeeRepository.countBossOfDepartment(DEPARTMENT_ID)).thenReturn(1);
         Mockito.when(employeeRepository.countIdByDepartmentId(DEPARTMENT_ID)).thenReturn(COUNT_EMPLOYEES);
-        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);*/
     }
 
     @Test
     public void addOrUpdateEmployeeWithoutId() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
-
         Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
-        Mockito.when(validator.validate(testEmployeeDto)).thenReturn(new HashSet<>());
-        Mockito.when(employeeRepository.save(testEmployee())).thenReturn(testEmployee());
-        Mockito.when(employeeRepository.findById(testEmployee.getId())).thenReturn(Optional.of(testEmployee()));
-
-        assertEquals(testEmployeeDto, employeeService.addOrUpdateEmployee(testEmployeeDto));
+        Mockito.when(employeeRepository.save(testEmployee)).thenReturn(testEmployee);
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
+        employeeService.addOrUpdateEmployee(testEmployeeDto);
+        verify(mapperEmployee).DtoToEmployee(testEmployeeDto);
+        verify(employeeRepository).save(Mockito.any(Employee.class));
+        verify(mapperEmployee).employeeToDto(Mockito.any(Employee.class));
     }
 
     @Test
     public void addOrUpdateEmployeeWithId() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
-
-        Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
-        Mockito.when(validator.validate(testEmployeeDto)).thenReturn(new HashSet<>());
-        Mockito.when(employeeRepository.save(testEmployee())).thenReturn(testEmployee());
-        Mockito.when(employeeRepository.findById(testEmployee.getId())).thenReturn(Optional.of(testEmployee()));
-
         testEmployeeDto.setId(testEmployee.getId());
-        assertEquals(testEmployeeDto, employeeService.addOrUpdateEmployee(testEmployeeDto));
+        Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
+        Mockito.when(employeeRepository.save(testEmployee)).thenReturn(testEmployee);
+        Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
+
+        employeeService.addOrUpdateEmployee(testEmployeeDto);
+
+        verify(mapperEmployee).DtoToEmployee(testEmployeeDto);
+        verify(employeeRepository).save(Mockito.any(Employee.class));
+        verify(mapperEmployee).employeeToDto(Mockito.any(Employee.class));
+    }
+
+    @Test
+    public void addOrUpdateEmployeeWhenEmployeeNotFound() {
+        testEmployeeDto.setId(EMPLOYEE_ID);
+        Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.empty());
+
+        Exception exception = Assertions.assertThrows(NoSuchElementInDBException.class,
+                () -> employeeService.addOrUpdateEmployee(testEmployeeDto));
+        Assertions.assertTrue(exception.getMessage().contains("Работник не найден"));
     }
 
     @Test
     public void addOrUpdateEmployeeInvalidEmploymentDate() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
-        Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
-        Mockito.when(validator.validate(testEmployeeDto)).thenReturn(new HashSet<>());
-        Mockito.when(employeeRepository.save(testEmployee())).thenReturn(testEmployee());
-        Mockito.when(employeeRepository.findById(testEmployee.getId())).thenReturn(Optional.of(testEmployee()));
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
 
         testEmployeeDto.setEmploymentDate(LocalDate.of(200, 1, 1));
+
         Exception exception = Assertions.assertThrows(ValidationException.class,
                 () -> employeeService.addOrUpdateEmployee(testEmployeeDto));
         Assertions.assertTrue(exception.getMessage().contains("Дата приема на работу, должна быть после дня рождения"));
@@ -120,15 +148,10 @@ class EmployeeServiceImplTest {
 
     @Test
     public void addOrUpdateEmployeeInvalidFired() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
-        Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
-        Mockito.when(validator.validate(testEmployeeDto)).thenReturn(new HashSet<>());
-        Mockito.when(employeeRepository.save(testEmployee())).thenReturn(testEmployee());
-        Mockito.when(employeeRepository.findById(testEmployee.getId())).thenReturn(Optional.of(testEmployee()));
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
 
         testEmployeeDto.setFiredDate(LocalDate.of(200, 1, 1));
+
         Exception exception = Assertions.assertThrows(ValidationException.class,
                 () -> employeeService.addOrUpdateEmployee(testEmployeeDto));
         Assertions.assertTrue(exception.getMessage().
@@ -137,15 +160,11 @@ class EmployeeServiceImplTest {
 
     @Test
     public void addOrUpdateEmployeeInvalidCountBoss() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
-        Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
-        Mockito.when(validator.validate(testEmployeeDto)).thenReturn(new HashSet<>());
-        Mockito.when(employeeRepository.save(testEmployee())).thenReturn(testEmployee());
-        Mockito.when(employeeRepository.findById(testEmployee.getId())).thenReturn(Optional.of(testEmployee()));
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(employeeRepository.countBossOfDepartment(DEPARTMENT_ID)).thenReturn(COUNT_OF_BOSS);
 
         testEmployeeDto.setBoss(true);
+
         Exception exception = Assertions.assertThrows(ValidationException.class,
                 () -> employeeService.addOrUpdateEmployee(testEmployeeDto));
         Assertions.assertTrue(exception.getMessage().contains("Может быть лишь один руководитель"));
@@ -153,15 +172,11 @@ class EmployeeServiceImplTest {
 
     @Test
     public void addOrUpdateEmployeeInvalidSalary() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
-        Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
-        Mockito.when(validator.validate(testEmployeeDto)).thenReturn(new HashSet<>());
-        Mockito.when(employeeRepository.save(testEmployee())).thenReturn(testEmployee());
-        Mockito.when(employeeRepository.findById(testEmployee.getId())).thenReturn(Optional.of(testEmployee()));
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
 
         testEmployeeDto.setSalary(SALARY_BOSS.add(BigDecimal.valueOf(5000)));
+
         Exception exception = Assertions.assertThrows(ValidationException.class,
                 () -> employeeService.addOrUpdateEmployee(testEmployeeDto));
         Assertions.assertTrue(exception.getMessage().contains("Зарплата не может быть больше, чем у руководителя"));
@@ -169,7 +184,6 @@ class EmployeeServiceImplTest {
 
     @Test
     public void firedEmployee() {
-        Employee testEmployee = testEmployee();
         Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
         employeeService.firedEmployee(EMPLOYEE_ID, FIRED_DATE);
         Mockito.verify(employeeRepository).save(employeeCaptor.capture());
@@ -179,7 +193,6 @@ class EmployeeServiceImplTest {
 
     @Test
     public void firedEmployeeInvalidFiredDate() {
-        Employee testEmployee = testEmployee();
         Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
 
         Exception exception = Assertions.assertThrows(ValidationException.class,
@@ -190,7 +203,7 @@ class EmployeeServiceImplTest {
 
     @Test
     public void getEmployeeInfoById() {
-        Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee()));
+        Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
         employeeService.getEmployeeInfoById(EMPLOYEE_ID);
         Mockito.verify(employeeRepository).findById(EMPLOYEE_ID);
         Mockito.verify(mapperEmployee).employeeToDto(Mockito.any(Employee.class));
@@ -198,40 +211,37 @@ class EmployeeServiceImplTest {
 
     @Test
     public void changeDepartmentOfEmployee() {
-        Long newDepartmentId = 2L;
-        Employee testEmployee = testEmployee();
+        testEmployeeDto.setDepartmentId(NEW_DEPARTMENT_ID);
 
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto());
-        Mockito.when(validator.validate(testEmployeeDto())).thenReturn(new HashSet<>());
+        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
         Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
-        Mockito.when(departmentDataCaller.isDepartmentExist(newDepartmentId)).thenReturn(true);
+        Mockito.when(employeeRepository.getBossOfDepartment(NEW_DEPARTMENT_ID)).thenReturn(boss);
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(departmentDataCaller.isDepartmentExist(NEW_DEPARTMENT_ID)).thenReturn(true);
 
-        employeeService.changeDepartmentOfEmployee(EMPLOYEE_ID, newDepartmentId);
+        employeeService.changeDepartmentOfEmployee(EMPLOYEE_ID, NEW_DEPARTMENT_ID);
         Mockito.verify(employeeRepository).save(employeeCaptor.capture());
-        assertEquals(newDepartmentId, employeeCaptor.getValue().getDepartmentId());
+        assertEquals(NEW_DEPARTMENT_ID, employeeCaptor.getValue().getDepartmentId());
     }
 
     @Test
     public void changeDepartmentOfAllEmployeeFromSame() {
-        Long newDepartmentId = 2L;
-        Employee testEmployee = testEmployee();
         List<Employee> testList = Collections.singletonList(testEmployee);
+        testEmployeeDto.setDepartmentId(NEW_DEPARTMENT_ID);
+        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
         Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
-        Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto());
         Mockito.when(employeeRepository.findByDepartmentId(testEmployee.getDepartmentId())).thenReturn(testList);
-        Mockito.when(departmentDataCaller.isDepartmentExist(newDepartmentId)).thenReturn(true);
-
-        employeeService.changeDepartmentOfAllEmployeeFromSame(testEmployee.getDepartmentId(), newDepartmentId);
+        Mockito.when(employeeRepository.getBossOfDepartment(NEW_DEPARTMENT_ID)).thenReturn(boss);
+        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
+        Mockito.when(departmentDataCaller.isDepartmentExist(NEW_DEPARTMENT_ID)).thenReturn(true);
+        employeeService.changeDepartmentOfAllEmployeeFromSame(testEmployee.getDepartmentId(), NEW_DEPARTMENT_ID);
         Mockito.verify(employeeRepository).save(employeeCaptor.capture());
-        assertEquals(newDepartmentId, employeeCaptor.getValue().getDepartmentId());
+        assertEquals(NEW_DEPARTMENT_ID, employeeCaptor.getValue().getDepartmentId());
     }
 
     @Test
     public void getEmployeesOfDepartment() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
         List<Employee> testList = Collections.singletonList(testEmployee);
-        List<EmployeeDto> testDtoList = Collections.singletonList(testEmployeeDto);
         Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
         Mockito.when(employeeRepository.findByDepartmentId(DEPARTMENT_ID)).thenReturn(testList);
         employeeService.getEmployeesOfDepartment(testEmployee.getDepartmentId());
@@ -240,8 +250,14 @@ class EmployeeServiceImplTest {
 
     @Test
     public void getBossOfEmployee() {
-        assertEquals(bossDto, employeeService.getBossOfEmployee(boss.getId()));
-        Mockito.when(employeeRepository.findById(boss.getId())).thenReturn(Optional.empty());
+        Mockito.when(mapperEmployee.employeeToDto(boss)).thenReturn(bossDto);
+        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
+        Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
+        assertEquals(bossDto, employeeService.getBossOfEmployee(EMPLOYEE_ID));
+    }
+
+    @Test
+    public void getBossOfEmployeeWithInvalidId() {
         Exception exception = Assertions.assertThrows(NoSuchElementInDBException.class,
                 () -> employeeService.getBossOfEmployee(boss.getId()));
         Assertions.assertTrue(exception.getMessage().contains("Работник не найден"));
@@ -249,13 +265,13 @@ class EmployeeServiceImplTest {
 
     @Test
     public void getBossOfDepartment() {
+        Mockito.when(mapperEmployee.employeeToDto(boss)).thenReturn(bossDto);
+        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
         assertEquals(bossDto, employeeService.getBossOfDepartment(DEPARTMENT_ID));
     }
 
     @Test
     public void getEmployeesByLastNameAndFirstName() {
-        EmployeeDto testEmployeeDto = testEmployeeDto();
-        Employee testEmployee = testEmployee();
         List<Employee> testList = Collections.singletonList(testEmployee);
         List<EmployeeDto> testDtoList = Collections.singletonList(testEmployeeDto);
         Mockito.when(mapperEmployee.employeeToDto(testEmployee)).thenReturn(testEmployeeDto);
@@ -265,23 +281,7 @@ class EmployeeServiceImplTest {
 
     @Test
     public void getCountEmployeesOfDepartment() {
+        Mockito.when(employeeRepository.countIdByDepartmentId(DEPARTMENT_ID)).thenReturn(COUNT_EMPLOYEES);
         assertEquals(COUNT_EMPLOYEES, employeeService.getCountEmployeesOfDepartment(DEPARTMENT_ID));
     }
-
-    EmployeeDto testEmployeeDto() {
-        return new EmployeeDto(LAST_NAME, FIRST_NAME, "Леонидович",
-                Sex.MALE, EMPLOYEE_BIRTH_DATE,
-                "-7(900)900-77-77", "bloblo@gmail.com",
-                EMPLOYEE_EMPLOYMENT_DATE, null, JobTitle.COMMON,
-                EMPLOYEE_SALARY, false, DEPARTMENT_ID);
-    }
-
-    Employee testEmployee() {
-        return new Employee(EMPLOYEE_ID, LAST_NAME, FIRST_NAME, "Леонидович",
-                Sex.MALE, EMPLOYEE_BIRTH_DATE,
-                "-7(900)900-77-77", "bloblo@gmail.com",
-                EMPLOYEE_EMPLOYMENT_DATE, null, JobTitle.COMMON,
-                EMPLOYEE_SALARY, false, DEPARTMENT_ID);
-    }
-
 }

@@ -1,19 +1,25 @@
 package com.epam.company.service.impl;
 
-import com.epam.company.util.EmployeeDataCaller;
-import com.epam.company.dto.*;
+import com.epam.company.dto.DepartmentDto;
+import com.epam.company.dto.DepartmentDtoReceive;
+import com.epam.company.dto.EmployeeDto;
 import com.epam.company.entity.Department;
+import com.epam.company.entity.EventDepartment;
 import com.epam.company.exception.NoSuchElementInDBException;
-import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.epam.company.repository.DepartmentRepository;
 import com.epam.company.service.DepartmentService;
+import com.epam.company.util.EmployeeDataCaller;
 import com.epam.company.util.MapperDepartment;
+import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ValidationException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DepartmentServiceImpl implements DepartmentService {
@@ -28,6 +34,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         this.employeeDataCaller = employeeDataCaller;
     }
 
+    @Transactional
     @Override
     public DepartmentDtoReceive addDepartment(@NonNull DepartmentDtoReceive departmentDtoReceive) {
         Department headDepartment = null;
@@ -45,9 +52,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department department = mapperDepartment.DtoReceiveToDepartment(departmentDtoReceive);
         department.setHeadDepartment(headDepartment);
         departmentRepository.save(department);
+        departmentRepository.addEvent(EventDepartment.CREATE.name(), department.getId());
         return mapperDepartment.departmentToDtoReceive(department);
     }
 
+    @Transactional
     @Override
     public DepartmentDto updateDepartmentTitle(String newTitle, @NonNull Long id) {
         Department department = departmentRepository.findById(id)
@@ -56,9 +65,11 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new ValidationException("Департамент с данным названием уже существует");
         }
         department.setTitle(newTitle);
+        departmentRepository.addEvent(EventDepartment.EDIT.name(), department.getId());
         return enrichDepartmentDto(departmentRepository.save(department));
     }
 
+    @Transactional
     @Override
     public void removeDepartment(@NonNull Long id) {
         Department department = departmentRepository.findById(id).orElse(null);
@@ -68,6 +79,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (!getEmployeesOfDepartment(id).isEmpty()) {
             throw new ValidationException("Невозможно удаление департамента при наличии работников");
         }
+        departmentRepository.addEvent(EventDepartment.DELETE.name(), department.getId());
         departmentRepository.deleteById(id);
     }
 
@@ -77,6 +89,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElseThrow(() -> new NoSuchElementInDBException("Департамент не найден")));
     }
 
+    @Transactional
     @Override
     public DepartmentDto changeHeadDepartment(@NonNull Long idNewHead, @NonNull Long idCurrent) {
         if (idCurrent.equals(idNewHead)) {
@@ -87,6 +100,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department headDepartment = departmentRepository.findById(idNewHead).orElseThrow(() ->
                 new NoSuchElementInDBException("Департамент не найден"));
         department.setHeadDepartment(headDepartment);
+        departmentRepository.addEvent(EventDepartment.EDIT.name(), department.getId());
         return enrichDepartmentDto(departmentRepository.save(department));
     }
 
@@ -154,10 +168,19 @@ public class DepartmentServiceImpl implements DepartmentService {
         return departmentRepository.findById(id).isPresent();
     }
 
+    @Transactional
+    @Scheduled(fixedRate = 300000)
+    public void fillDepartmentsFundTable () {
+        List<Long> allDepartmentsId = departmentRepository.findAll()
+                .stream().map(Department::getId).collect(Collectors.toList());
+        for (Long id : allDepartmentsId) {
+            departmentRepository.addSumSalaryOfDepartment(getSumOfSalary(id), id);
+        }
+    }
+
     private DepartmentDto enrichDepartmentDto(Department department) {
         DepartmentDto departmentDto = mapperDepartment.departmentToDto(department);
         departmentDto.setBoss(employeeDataCaller.getBoss(department));
-
         departmentDto.setCountEmployee(employeeDataCaller.getCountEmployees(department));
         return departmentDto;
     }

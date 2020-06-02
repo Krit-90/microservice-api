@@ -28,6 +28,15 @@ class DepartmentServiceImplTest {
     public static final Long HEAD_DEPARTMENT_ID = 2L;
     public static final LocalDate HEAD_DEPARTMENT_CREATION_DATE = LocalDate.of(1993, 2, 3);
     public static final String NEW_TITLE = "Новое название";
+    public static final String EMPLOYEE_DTO_LAST_NAME = "Сидоров";
+    public static final String EMPLOYEE_DTO_FIRST_NAME = "Петр";
+    public static final String EMPLOYEE_DTO_PATRONYMIC = "Сидорович";
+    public static final LocalDate EMPLOYEE_DTO_BIRTH_DATE = LocalDate.of(1987, 1, 1);
+    public static final String EMPLOYEE_DTO_PHONE = "+7(900)900-99-99";
+    public static final String EMPLOYEE_DTO_EMAIL = "bla@gmail.com";
+    public static final LocalDate EMPLOYEE_DTO_EMPLOYMENT_DATE = LocalDate.of(2010, 4, 10);
+    public static final BigDecimal EMPLOYEE_DTO_SALARY = BigDecimal.valueOf(30000);
+    public static final String HEAD_DEPARTMENT_TITLE = "Test main office";
     @Mock
     DepartmentRepository departmentRepository;
     @Mock
@@ -208,10 +217,6 @@ class DepartmentServiceImplTest {
     }
 
     @Test
-    void getDepartmentByTitle() {
-    }
-
-    @Test
     void getAllHigherDepartments() {
         Department testDepartment = testDepartment(testHeadDepartment());
         Mockito.when(mapperDepartment.departmentToDto(testDepartment.getHeadDepartment()))
@@ -288,12 +293,12 @@ class DepartmentServiceImplTest {
     }
 
     Department testHeadDepartment() {
-        return new Department(HEAD_DEPARTMENT_ID, "Test main office",
+        return new Department(HEAD_DEPARTMENT_ID, HEAD_DEPARTMENT_TITLE,
                 HEAD_DEPARTMENT_CREATION_DATE, null);
     }
 
     DepartmentDto testHeadDepartmentDto() {
-        return new DepartmentDto(HEAD_DEPARTMENT_ID, "Test main office",
+        return new DepartmentDto(HEAD_DEPARTMENT_ID, HEAD_DEPARTMENT_TITLE,
                 HEAD_DEPARTMENT_CREATION_DATE, null, null);
     }
 
@@ -306,10 +311,10 @@ class DepartmentServiceImplTest {
     }
 
     EmployeeDto testBoss() {
-        return new EmployeeDto(1L, "Сидоров", "Петр", "Сидорович",
-                Sex.MALE, LocalDate.of(1987, 1, 1),
-                "+7(900)900-99-99", "bla@gmail.com",
-                LocalDate.of(2010, 4, 10), null, JobTitle.BOSS,
-                BigDecimal.valueOf(30000), true);
+        return new EmployeeDto(1L, EMPLOYEE_DTO_LAST_NAME, EMPLOYEE_DTO_FIRST_NAME, EMPLOYEE_DTO_PATRONYMIC,
+                Sex.MALE, EMPLOYEE_DTO_BIRTH_DATE,
+                EMPLOYEE_DTO_PHONE, EMPLOYEE_DTO_EMAIL,
+                EMPLOYEE_DTO_EMPLOYMENT_DATE, null, JobTitle.BOSS,
+                EMPLOYEE_DTO_SALARY, true);
     }
 }

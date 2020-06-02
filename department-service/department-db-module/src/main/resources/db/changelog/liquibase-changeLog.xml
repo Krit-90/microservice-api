@@ -2,11 +2,7 @@
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-    http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd ">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <changeSet id="GAbdulaev-1" author="GAbdulaev">
         <createTable tableName="departments">
@@ -21,8 +17,37 @@
                 <constraints foreignKeyName="head_department_id"
                              referencedTableName="departments"
                              referencedColumnNames="id"
+                             deleteCascade="true"
+
                 />
             </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="GAbdulaev-2" author="GAbdulaev">
+        <createTable tableName="departments_fund">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="sum_salaries" type="money"/>
+            <column name="department_id" type="bigint">
+                <constraints foreignKeyName="department_id"
+                             referencedTableName="departments"
+                             referencedColumnNames="id"
+                             deleteCascade="true"
+                />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="GAbdulaev-3" author="GAbdulaev">
+        <createTable tableName="department_monitoring">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="event" type="varchar"/>
+            <column name="department_id" type="bigint"/>
+            <column name="date_time" type="datetime"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

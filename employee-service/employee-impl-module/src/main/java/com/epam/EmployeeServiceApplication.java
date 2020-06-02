@@ -1,4 +1,5 @@
 package com.epam;
+
 import com.epam.company.util.DepartmentControllerFeign;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
