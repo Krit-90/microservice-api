@@ -4,10 +4,15 @@ import com.epam.company.dto.DepartmentDto;
 import com.epam.company.dto.DepartmentDtoReceive;
 import com.epam.company.dto.EmployeeDto;
 import com.epam.company.entity.Department;
+import com.epam.company.entity.DepartmentFund;
 import com.epam.company.entity.EventDepartment;
+import com.epam.company.entity.EventTitle;
 import com.epam.company.exception.NoSuchElementInDBException;
+import com.epam.company.repository.DepartmentFundRepository;
 import com.epam.company.repository.DepartmentRepository;
 import com.epam.company.service.DepartmentService;
+import com.epam.company.util.CustomSpringEvent;
+import com.epam.company.util.CustomSpringEventPublisher;
 import com.epam.company.util.EmployeeDataCaller;
 import com.epam.company.util.MapperDepartment;
 import lombok.NonNull;
@@ -18,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ValidationException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,12 +32,18 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final MapperDepartment mapperDepartment;
     private final EmployeeDataCaller employeeDataCaller;
+    private final DepartmentFundRepository departmentFundRepository;
+    private final CustomSpringEventPublisher customSpringEventPublisher;
+
     @Autowired
     public DepartmentServiceImpl(DepartmentRepository departmentRepository, MapperDepartment mapperDepartment,
-                                 EmployeeDataCaller employeeDataCaller) {
+                                 EmployeeDataCaller employeeDataCaller, DepartmentFundRepository departmentFundRepository,
+                                 CustomSpringEventPublisher customSpringEventPublisher) {
         this.departmentRepository = departmentRepository;
         this.mapperDepartment = mapperDepartment;
         this.employeeDataCaller = employeeDataCaller;
+        this.departmentFundRepository = departmentFundRepository;
+        this.customSpringEventPublisher = customSpringEventPublisher;
     }
 
     @Transactional
@@ -52,7 +64,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department department = mapperDepartment.DtoReceiveToDepartment(departmentDtoReceive);
         department.setHeadDepartment(headDepartment);
         departmentRepository.save(department);
-        departmentRepository.addEvent(EventDepartment.CREATE.name(), department.getId());
+        customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
+                new EventDepartment(null, EventTitle.CREATE, department.getId(), LocalDateTime.now())));
         return mapperDepartment.departmentToDtoReceive(department);
     }
 
@@ -65,7 +78,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new ValidationException("Департамент с данным названием уже существует");
         }
         department.setTitle(newTitle);
-        departmentRepository.addEvent(EventDepartment.EDIT.name(), department.getId());
+        customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
+                new EventDepartment(null, EventTitle.EDIT, department.getId(), LocalDateTime.now())));
         return enrichDepartmentDto(departmentRepository.save(department));
     }
 
@@ -79,7 +93,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (!getEmployeesOfDepartment(id).isEmpty()) {
             throw new ValidationException("Невозможно удаление департамента при наличии работников");
         }
-        departmentRepository.addEvent(EventDepartment.DELETE.name(), department.getId());
+        customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
+                new EventDepartment(null, EventTitle.DELETE, department.getId(), LocalDateTime.now())));
         departmentRepository.deleteById(id);
     }
 
@@ -100,7 +115,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department headDepartment = departmentRepository.findById(idNewHead).orElseThrow(() ->
                 new NoSuchElementInDBException("Департамент не найден"));
         department.setHeadDepartment(headDepartment);
-        departmentRepository.addEvent(EventDepartment.EDIT.name(), department.getId());
+        customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
+                new EventDepartment(null, EventTitle.EDIT, department.getId(), LocalDateTime.now())));
         return enrichDepartmentDto(departmentRepository.save(department));
     }
 
@@ -169,12 +185,13 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Transactional
-    @Scheduled(fixedRate = 300000)
-    public void fillDepartmentsFundTable () {
+    @Scheduled(fixedRateString = "${fund.rate}")
+    public void fillDepartmentsFundTable() {
         List<Long> allDepartmentsId = departmentRepository.findAll()
                 .stream().map(Department::getId).collect(Collectors.toList());
+        departmentFundRepository.deleteAll();
         for (Long id : allDepartmentsId) {
-            departmentRepository.addSumSalaryOfDepartment(getSumOfSalary(id), id);
+            departmentFundRepository.save(new DepartmentFund(getSumOfSalary(id), id));
         }
     }
 
@@ -188,6 +205,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private static class DepartmentIterator implements Iterator<Department> {
         Department nextDepartment;
         Queue<Department> queue = new LinkedList<>();
+
         public DepartmentIterator(Department department) {
             queue.addAll(department.getSubDepartment());
         }

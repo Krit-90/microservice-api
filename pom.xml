@@ -16,6 +16,7 @@
         <module>department-service</module>
         <module>employee-service</module>
         <module>Eureka</module>
+        <module>zuul</module>
     </modules>
     <build>
         <plugins>

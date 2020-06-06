@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import javax.validation.ValidationException;
-import javax.validation.Validator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -35,7 +34,7 @@ class EmployeeServiceImplTest {
     private static final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1975, 6, 21);
     private static final LocalDate EMPLOYEE_EMPLOYMENT_DATE = LocalDate.of(2008, 11, 25);
     private static final BigDecimal EMPLOYEE_SALARY = BigDecimal.valueOf(29000);
-    private static final Integer COUNT_EMPLOYEES = Integer.valueOf(2);
+    private static final Integer COUNT_EMPLOYEES = 2;
     private static final String LAST_NAME = "Носков";
     private static final String FIRST_NAME = "Николай";
     private static final String EMPLOYEE_PHONE = "-7(900)900-77-77";
@@ -60,8 +59,6 @@ class EmployeeServiceImplTest {
     MapperEmployee mapperEmployee;
     @Mock
     DepartmentDataCaller departmentDataCaller;
-    @Mock
-    Validator validator;
     @InjectMocks
     EmployeeServiceImpl employeeService;
     @Captor
@@ -87,13 +84,6 @@ class EmployeeServiceImplTest {
                 true);
 
         bossDto.setDepartmentId(DEPARTMENT_ID);
-
-/*        Mockito.when(mapperEmployee.employeeToDto(boss)).thenReturn(bossDto);
-        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
-        Mockito.when(employeeRepository.findById(BOSS_ID)).thenReturn(Optional.of(boss));
-        Mockito.when(employeeRepository.countBossOfDepartment(DEPARTMENT_ID)).thenReturn(1);
-        Mockito.when(employeeRepository.countIdByDepartmentId(DEPARTMENT_ID)).thenReturn(COUNT_EMPLOYEES);
-        Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);*/
     }
 
     @Test

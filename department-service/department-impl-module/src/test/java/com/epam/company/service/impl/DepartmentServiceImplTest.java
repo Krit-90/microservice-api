@@ -105,7 +105,6 @@ class DepartmentServiceImplTest {
         Mockito.when(employeeDataCaller.getCountEmployees(testDepartment)).thenReturn(COUNT_EMPLOYEES);
         Mockito.when(departmentRepository.findById(DEPARTMENT_ID)).thenReturn(Optional.of(testDepartment));
         Mockito.when(departmentRepository.findByTitle(NEW_TITLE)).thenReturn(Optional.empty());
-//      TODO: как тут без подстановки при возвращении, если в enrich нам нужен конкретный объект
         Mockito.when(departmentRepository.save(testDepartment)).thenReturn(testDepartment);
         departmentService.updateDepartmentTitle(NEW_TITLE, DEPARTMENT_ID);
         Mockito.verify(departmentRepository).save(departmentCaptor.capture());
