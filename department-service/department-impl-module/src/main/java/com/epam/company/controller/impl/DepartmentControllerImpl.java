@@ -71,6 +71,11 @@ public class DepartmentControllerImpl implements DepartmentController {
     }
 
     @Override
+    public void dumpLoad() {
+        departmentService.dumpLoad();
+    }
+
+    @Override
     public Boolean isExist(Long id) {
         return departmentService.isExist(id);
     }

@@ -119,5 +119,13 @@ public interface DepartmentController {
      */
     @GetMapping("/{id}/is-exist")
     Boolean isExist(@PathVariable(name = "id") Long id);
+
+    /**
+     * Put-запрос на заливку массива департаментов
+     *
+     */
+
+    @PutMapping("/dump_load")
+    void dumpLoad();
 }
 

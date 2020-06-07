@@ -109,4 +109,11 @@ public interface DepartmentService {
 
     Boolean isExist(Long id);
 
+    /**
+     * Загрузка большого массива департаментов
+     *
+     */
+
+    void dumpLoad();
+
 }

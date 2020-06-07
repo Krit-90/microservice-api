@@ -17,12 +17,17 @@ import com.epam.company.util.EmployeeDataCaller;
 import com.epam.company.util.MapperDepartment;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ValidationException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +39,8 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final EmployeeDataCaller employeeDataCaller;
     private final DepartmentFundRepository departmentFundRepository;
     private final CustomSpringEventPublisher customSpringEventPublisher;
-
+    @Autowired
+    JdbcTemplate jdbcTemplate;
     @Autowired
     public DepartmentServiceImpl(DepartmentRepository departmentRepository, MapperDepartment mapperDepartment,
                                  EmployeeDataCaller employeeDataCaller, DepartmentFundRepository departmentFundRepository,
@@ -192,6 +198,20 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentFundRepository.deleteAll();
         for (Long id : allDepartmentsId) {
             departmentFundRepository.save(new DepartmentFund(getSumOfSalary(id), id));
+        }
+    }
+
+    public void dumpLoad() {
+        String query = "Insert Into departments (title, creation_date, head_department_id) Values (?, ?, ?)";
+        try (BufferedReader reader = new BufferedReader(
+                new FileReader("department-service/department-impl-module/src/main/resources/dump.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] row = line.split("/");
+                jdbcTemplate.update(query, row[0], LocalDate.parse(row[1]), Long.valueOf(row[2]));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
