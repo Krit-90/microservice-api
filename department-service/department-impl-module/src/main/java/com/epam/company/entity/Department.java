@@ -1,26 +1,21 @@
 package com.epam.company.entity;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Set;
 
-@Table(name = "departments")
-@Entity
 public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
-    @Column
     private String title;
     @NotNull
-    @Column
     private LocalDate creationDate;
-    @OneToMany(mappedBy = "headDepartment")
     private Set<Department> subDepartment;
-    @ManyToOne
-    @JoinColumn(name = "head_department_id")
     private Department headDepartment;
 
 

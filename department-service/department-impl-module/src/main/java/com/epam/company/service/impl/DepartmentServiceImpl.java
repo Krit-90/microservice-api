@@ -9,6 +9,7 @@ import com.epam.company.entity.EventDepartment;
 import com.epam.company.entity.EventTitle;
 import com.epam.company.exception.NoSuchElementInDBException;
 import com.epam.company.repository.DepartmentFundRepository;
+import com.epam.company.repository.DepartmentJdbcRepository;
 import com.epam.company.repository.DepartmentRepository;
 import com.epam.company.service.DepartmentService;
 import com.epam.company.util.CustomSpringEvent;
@@ -17,17 +18,12 @@ import com.epam.company.util.EmployeeDataCaller;
 import com.epam.company.util.MapperDepartment;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ValidationException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,17 +35,19 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final EmployeeDataCaller employeeDataCaller;
     private final DepartmentFundRepository departmentFundRepository;
     private final CustomSpringEventPublisher customSpringEventPublisher;
-    @Autowired
-    JdbcTemplate jdbcTemplate;
+    private final DepartmentJdbcRepository departmentJdbcRepository;
+
     @Autowired
     public DepartmentServiceImpl(DepartmentRepository departmentRepository, MapperDepartment mapperDepartment,
                                  EmployeeDataCaller employeeDataCaller, DepartmentFundRepository departmentFundRepository,
-                                 CustomSpringEventPublisher customSpringEventPublisher) {
+                                 CustomSpringEventPublisher customSpringEventPublisher,
+                                 DepartmentJdbcRepository departmentJdbcRepository) {
         this.departmentRepository = departmentRepository;
         this.mapperDepartment = mapperDepartment;
         this.employeeDataCaller = employeeDataCaller;
         this.departmentFundRepository = departmentFundRepository;
         this.customSpringEventPublisher = customSpringEventPublisher;
+        this.departmentJdbcRepository = departmentJdbcRepository;
     }
 
     @Transactional
@@ -69,7 +67,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
         Department department = mapperDepartment.DtoReceiveToDepartment(departmentDtoReceive);
         department.setHeadDepartment(headDepartment);
-        departmentRepository.save(department);
+        department.setId(departmentRepository.save(department));
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.CREATE, department.getId(), LocalDateTime.now())));
         return mapperDepartment.departmentToDtoReceive(department);
@@ -86,7 +84,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         department.setTitle(newTitle);
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.EDIT, department.getId(), LocalDateTime.now())));
-        return enrichDepartmentDto(departmentRepository.save(department));
+        department.setId(departmentRepository.save(department));
+        return enrichDepartmentDto(department);
     }
 
     @Transactional
@@ -123,7 +122,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         department.setHeadDepartment(headDepartment);
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.EDIT, department.getId(), LocalDateTime.now())));
-        return enrichDepartmentDto(departmentRepository.save(department));
+        department.setId(departmentRepository.save(department));
+        return enrichDepartmentDto(department);
     }
 
     @Override
@@ -202,17 +202,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     public void dumpLoad() {
-        String query = "Insert Into departments (title, creation_date, head_department_id) Values (?, ?, ?)";
-        try (BufferedReader reader = new BufferedReader(
-                new FileReader("department-service/department-impl-module/src/main/resources/dump.txt"))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] row = line.split("/");
-                jdbcTemplate.update(query, row[0], LocalDate.parse(row[1]), Long.valueOf(row[2]));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        departmentJdbcRepository.dumpLoad();
     }
 
     private DepartmentDto enrichDepartmentDto(Department department) {

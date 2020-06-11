@@ -105,7 +105,7 @@ class DepartmentServiceImplTest {
         Mockito.when(employeeDataCaller.getCountEmployees(testDepartment)).thenReturn(COUNT_EMPLOYEES);
         Mockito.when(departmentRepository.findById(DEPARTMENT_ID)).thenReturn(Optional.of(testDepartment));
         Mockito.when(departmentRepository.findByTitle(NEW_TITLE)).thenReturn(Optional.empty());
-        Mockito.when(departmentRepository.save(testDepartment)).thenReturn(testDepartment);
+        Mockito.when(departmentRepository.save(testDepartment)).thenReturn(testDepartment.getId());
         departmentService.updateDepartmentTitle(NEW_TITLE, DEPARTMENT_ID);
         Mockito.verify(departmentRepository).save(departmentCaptor.capture());
         assertEquals(NEW_TITLE, departmentCaptor.getValue().getTitle());
@@ -184,7 +184,7 @@ class DepartmentServiceImplTest {
         Mockito.when(employeeDataCaller.getCountEmployees(testDepartment)).thenReturn(COUNT_EMPLOYEES);
         Mockito.when(departmentRepository.findById(DEPARTMENT_ID)).thenReturn(Optional.of(testDepartment));
         Mockito.when(departmentRepository.findById(HEAD_DEPARTMENT_ID)).thenReturn(Optional.of(testHeadDepartment()));
-        Mockito.when(departmentRepository.save(testDepartment)).thenReturn(testDepartment);
+        Mockito.when(departmentRepository.save(testDepartment)).thenReturn(testDepartment.getId());
         departmentService.changeHeadDepartment(HEAD_DEPARTMENT_ID, DEPARTMENT_ID);
         Mockito.verify(departmentRepository).save(departmentCaptor.capture());
         assertEquals(HEAD_DEPARTMENT_ID, departmentCaptor.getValue().getHeadDepartment().getId());

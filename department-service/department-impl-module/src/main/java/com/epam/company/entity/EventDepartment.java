@@ -1,20 +1,17 @@
 package com.epam.company.entity;
 
-import javax.persistence.*;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import java.time.LocalDateTime;
 
-@Table(name = "department_monitoring")
-@Entity
 public class EventDepartment {
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
     @Enumerated(EnumType.STRING)
     private EventTitle event;
-    @Column
     private Long departmentId;
-    @Column
     private LocalDateTime dateTime;
 
     public EventDepartment() {

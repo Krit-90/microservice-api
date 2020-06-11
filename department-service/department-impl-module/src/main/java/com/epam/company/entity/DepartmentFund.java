@@ -1,17 +1,10 @@
 package com.epam.company.entity;
 
-import javax.persistence.*;
 import java.math.BigDecimal;
 
-@Table(name = "departments_fund")
-@Entity
 public class DepartmentFund {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
     private BigDecimal sumSalaries;
-    @Column
     private Long departmentId;
 
     public DepartmentFund() {

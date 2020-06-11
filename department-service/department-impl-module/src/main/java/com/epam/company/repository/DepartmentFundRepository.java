@@ -1,9 +1,15 @@
 package com.epam.company.repository;
 
 import com.epam.company.entity.DepartmentFund;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 
-@Repository
-public interface DepartmentFundRepository extends JpaRepository<DepartmentFund, Long> {
+@Mapper
+public interface DepartmentFundRepository{
+    @Delete("Delete From departments_fund")
+    void deleteAll();
+    @Insert("Insert Into departments_fund(sum_salaries, department_id) Values(#{sumSalaries}, #{departmentId})" +
+            " returning id")
+    Long save(DepartmentFund fund);
 }
