@@ -1,16 +1,17 @@
 package com.epam.company.service.impl;
 
 import com.epam.company.dto.EmployeeDto;
-import com.epam.company.util.DepartmentDataCaller;
 import com.epam.company.entity.Employee;
 import com.epam.company.exception.NoSuchElementInDBException;
+import com.epam.company.repository.EmployeeRepository;
+import com.epam.company.service.EmployeeService;
+import com.epam.company.util.DepartmentDataCaller;
+import com.epam.company.util.MapperEmployee;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.epam.company.repository.EmployeeRepository;
-import com.epam.company.service.EmployeeService;
-import com.epam.company.util.MapperEmployee;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
@@ -43,7 +44,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         validateOrThrow(employeeDto);
         Employee employee = mapperEmployee.DtoToEmployee(employeeDto);
-        employeeDto = mapperEmployee.employeeToDto(employeeRepository.save(employee));
+        if (employeeDto.getId() == null) {
+            employeeRepository.save(employee);
+
+        } else {
+            employeeRepository.update(employee);
+        }
+        employeeDto = mapperEmployee.employeeToDto(employee);
         return employeeDto;
     }
 
@@ -64,7 +71,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         employee.setFiredDate(firedDate);
         employee.setDepartmentId(null);
-        return mapperEmployee.employeeToDto(employeeRepository.save(employee));
+        employeeRepository.update(employee);
+        return mapperEmployee.employeeToDto(employee);
     }
 
     @Override
@@ -85,7 +93,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDepartmentId(newDepartmentId);
         EmployeeDto employeeDto = mapperEmployee.employeeToDto(employee);
         validateOrThrow(employeeDto);
-        employeeRepository.save(employee);
+        employeeRepository.update(employee);
         return employeeDto;
     }
 
@@ -145,7 +153,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employeeDto.getFiredDate() != null) {
             throw new ValidationException("При создании или обновлении не должно быть даты увольнения");
         }
-        if (employeeDto.getBoss() && employeeRepository.countBossOfDepartment(employeeDto.getDepartmentId()) > 0) {
+//        TODO: добавил новое условие, а то если босса проапдейтить, то он конфликтует сам с собой
+        if (employeeDto.getId() != null && !employeeRepository.findById(employeeDto.getId()).get()
+                .equals(employeeRepository.getBossOfDepartment(employeeDto.getDepartmentId())) &&
+                employeeDto.getBoss() && employeeRepository.countBossOfDepartment(employeeDto.getDepartmentId()) > 0) {
             throw new ValidationException("Может быть лишь один руководитель");
         }
         if (!employeeDto.getBoss() && employeeDto.getSalary().compareTo(

@@ -192,6 +192,53 @@ public class EmployeeDto {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EmployeeDto)) return false;
+
+        EmployeeDto that = (EmployeeDto) o;
+
+        if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
+        if (getLastName() != null ? !getLastName().equals(that.getLastName()) : that.getLastName() != null)
+            return false;
+        if (getFirstName() != null ? !getFirstName().equals(that.getFirstName()) : that.getFirstName() != null)
+            return false;
+        if (getPatronymic() != null ? !getPatronymic().equals(that.getPatronymic()) : that.getPatronymic() != null)
+            return false;
+        if (getGender() != that.getGender()) return false;
+        if (getBirthDate() != null ? !getBirthDate().equals(that.getBirthDate()) : that.getBirthDate() != null)
+            return false;
+        if (getPhone() != null ? !getPhone().equals(that.getPhone()) : that.getPhone() != null) return false;
+        if (getEmail() != null ? !getEmail().equals(that.getEmail()) : that.getEmail() != null) return false;
+        if (getEmploymentDate() != null ? !getEmploymentDate().equals(that.getEmploymentDate()) : that.getEmploymentDate() != null)
+            return false;
+        if (getFiredDate() != null ? !getFiredDate().equals(that.getFiredDate()) : that.getFiredDate() != null)
+            return false;
+        if (getJobTitle() != that.getJobTitle()) return false;
+        if (getSalary() != null ? !getSalary().equals(that.getSalary()) : that.getSalary() != null) return false;
+        if (isBoss != null ? !isBoss.equals(that.isBoss) : that.isBoss != null) return false;
+        return getDepartmentId() != null ? getDepartmentId().equals(that.getDepartmentId()) : that.getDepartmentId() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getLastName() != null ? getLastName().hashCode() : 0);
+        result = 31 * result + (getFirstName() != null ? getFirstName().hashCode() : 0);
+        result = 31 * result + (getPatronymic() != null ? getPatronymic().hashCode() : 0);
+        result = 31 * result + (getGender() != null ? getGender().hashCode() : 0);
+        result = 31 * result + (getBirthDate() != null ? getBirthDate().hashCode() : 0);
+        result = 31 * result + (getPhone() != null ? getPhone().hashCode() : 0);
+        result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
+        result = 31 * result + (getEmploymentDate() != null ? getEmploymentDate().hashCode() : 0);
+        result = 31 * result + (getFiredDate() != null ? getFiredDate().hashCode() : 0);
+        result = 31 * result + (getJobTitle() != null ? getJobTitle().hashCode() : 0);
+        result = 31 * result + (getSalary() != null ? getSalary().hashCode() : 0);
+        result = 31 * result + (isBoss != null ? isBoss.hashCode() : 0);
+        result = 31 * result + (getDepartmentId() != null ? getDepartmentId().hashCode() : 0);
+        return result;
+    }
 
     @Override
     public String toString() {

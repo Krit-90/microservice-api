@@ -67,7 +67,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
         Department department = mapperDepartment.DtoReceiveToDepartment(departmentDtoReceive);
         department.setHeadDepartment(headDepartment);
-        department.setId(departmentRepository.save(department));
+        departmentRepository.save(department);
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.CREATE, department.getId(), LocalDateTime.now())));
         return mapperDepartment.departmentToDtoReceive(department);
@@ -82,9 +82,9 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new ValidationException("Департамент с данным названием уже существует");
         }
         department.setTitle(newTitle);
+        departmentRepository.update(department);
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.EDIT, department.getId(), LocalDateTime.now())));
-        department.setId(departmentRepository.save(department));
         return enrichDepartmentDto(department);
     }
 
@@ -122,7 +122,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         department.setHeadDepartment(headDepartment);
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.EDIT, department.getId(), LocalDateTime.now())));
-        department.setId(departmentRepository.save(department));
+        departmentRepository.update(department);
         return enrichDepartmentDto(department);
     }
 

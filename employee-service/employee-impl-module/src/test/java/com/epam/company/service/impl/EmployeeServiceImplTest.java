@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import javax.validation.ValidationException;
+import javax.validation.Validator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -59,6 +60,8 @@ class EmployeeServiceImplTest {
     MapperEmployee mapperEmployee;
     @Mock
     DepartmentDataCaller departmentDataCaller;
+    @Mock
+    Validator validator;
     @InjectMocks
     EmployeeServiceImpl employeeService;
     @Captor
@@ -89,7 +92,6 @@ class EmployeeServiceImplTest {
     @Test
     public void addOrUpdateEmployeeWithoutId() {
         Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(employeeRepository.save(testEmployee)).thenReturn(testEmployee);
         Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
         Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
         employeeService.addOrUpdateEmployee(testEmployeeDto);
@@ -102,7 +104,6 @@ class EmployeeServiceImplTest {
     public void addOrUpdateEmployeeWithId() {
         testEmployeeDto.setId(testEmployee.getId());
         Mockito.when(mapperEmployee.DtoToEmployee(testEmployeeDto)).thenReturn(testEmployee);
-        Mockito.when(employeeRepository.save(testEmployee)).thenReturn(testEmployee);
         Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
         Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
         Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
@@ -110,7 +111,7 @@ class EmployeeServiceImplTest {
         employeeService.addOrUpdateEmployee(testEmployeeDto);
 
         verify(mapperEmployee).DtoToEmployee(testEmployeeDto);
-        verify(employeeRepository).save(Mockito.any(Employee.class));
+        verify(employeeRepository).update(Mockito.any(Employee.class));
         verify(mapperEmployee).employeeToDto(Mockito.any(Employee.class));
     }
 
@@ -176,7 +177,7 @@ class EmployeeServiceImplTest {
     public void firedEmployee() {
         Mockito.when(employeeRepository.findById(EMPLOYEE_ID)).thenReturn(Optional.of(testEmployee));
         employeeService.firedEmployee(EMPLOYEE_ID, FIRED_DATE);
-        Mockito.verify(employeeRepository).save(employeeCaptor.capture());
+        Mockito.verify(employeeRepository).update(employeeCaptor.capture());
         assertEquals(FIRED_DATE, employeeCaptor.getValue().getFiredDate());
         Assertions.assertNull(employeeCaptor.getValue().getDepartmentId());
     }
@@ -210,7 +211,7 @@ class EmployeeServiceImplTest {
         Mockito.when(departmentDataCaller.isDepartmentExist(NEW_DEPARTMENT_ID)).thenReturn(true);
 
         employeeService.changeDepartmentOfEmployee(EMPLOYEE_ID, NEW_DEPARTMENT_ID);
-        Mockito.verify(employeeRepository).save(employeeCaptor.capture());
+        Mockito.verify(employeeRepository).update(employeeCaptor.capture());
         assertEquals(NEW_DEPARTMENT_ID, employeeCaptor.getValue().getDepartmentId());
     }
 
@@ -225,7 +226,7 @@ class EmployeeServiceImplTest {
         Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
         Mockito.when(departmentDataCaller.isDepartmentExist(NEW_DEPARTMENT_ID)).thenReturn(true);
         employeeService.changeDepartmentOfAllEmployeeFromSame(testEmployee.getDepartmentId(), NEW_DEPARTMENT_ID);
-        Mockito.verify(employeeRepository).save(employeeCaptor.capture());
+        Mockito.verify(employeeRepository).update(employeeCaptor.capture());
         assertEquals(NEW_DEPARTMENT_ID, employeeCaptor.getValue().getDepartmentId());
     }
 
