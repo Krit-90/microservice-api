@@ -154,8 +154,8 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new ValidationException("При создании или обновлении не должно быть даты увольнения");
         }
 //        TODO: добавил новое условие, а то если босса проапдейтить, то он конфликтует сам с собой
-        if (employeeDto.getId() != null && !employeeRepository.findById(employeeDto.getId()).get()
-                .equals(employeeRepository.getBossOfDepartment(employeeDto.getDepartmentId())) &&
+        if (!employeeRepository.getBossOfDepartment(employeeDto.getDepartmentId())
+                .equals(employeeRepository.findById(employeeDto.getId()).orElse(null)) &&
                 employeeDto.getBoss() && employeeRepository.countBossOfDepartment(employeeDto.getDepartmentId()) > 0) {
             throw new ValidationException("Может быть лишь один руководитель");
         }

@@ -116,6 +116,7 @@
                         <exclude>**/config/**</exclude>
                         <exclude>**/entity/**</exclude>
                         <exclude>**/exception/**</exclude>
+                        <exclude>**/repository/**</exclude>
                         <exclude>**/mapper/**</exclude>
                         <exclude>**/util/**</exclude>
                         <exclude>**/*Application.*</exclude>

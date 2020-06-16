@@ -150,9 +150,10 @@ class EmployeeServiceImplTest {
     }
 
     @Test
-    public void addOrUpdateEmployeeInvalidCountBoss() {
+    public void addOrUpdateEmployeeAsBossWhenBossAlreadyExists() {
         Mockito.when(departmentDataCaller.isDepartmentExist(DEPARTMENT_ID)).thenReturn(true);
         Mockito.when(employeeRepository.countBossOfDepartment(DEPARTMENT_ID)).thenReturn(COUNT_OF_BOSS);
+        Mockito.when(employeeRepository.getBossOfDepartment(DEPARTMENT_ID)).thenReturn(boss);
 
         testEmployeeDto.setBoss(true);
 
