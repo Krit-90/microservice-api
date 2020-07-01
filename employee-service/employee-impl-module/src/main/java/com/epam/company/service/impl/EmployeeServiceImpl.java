@@ -3,12 +3,14 @@ package com.epam.company.service.impl;
 import com.epam.company.dto.EmployeeDto;
 import com.epam.company.entity.Employee;
 import com.epam.company.exception.NoSuchElementInDBException;
+import com.epam.company.repository.DepartmentSnapshotRepository;
 import com.epam.company.repository.EmployeeRepository;
 import com.epam.company.service.EmployeeService;
 import com.epam.company.util.DepartmentDataCaller;
 import com.epam.company.util.MapperEmployee;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,14 +29,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final Validator validator;
     private final EmployeeRepository employeeRepository;
     private final MapperEmployee mapperEmployee;
+    private final DepartmentSnapshotRepository departmentSnapshotRepository;
 
     @Autowired
     public EmployeeServiceImpl(DepartmentDataCaller departmentDataCaller, Validator validator,
-                               EmployeeRepository employeeRepository, MapperEmployee mapperEmployee) {
+                               EmployeeRepository employeeRepository, MapperEmployee mapperEmployee,
+                               DepartmentSnapshotRepository departmentSnapshotRepository) {
         this.departmentDataCaller = departmentDataCaller;
         this.validator = validator;
         this.employeeRepository = employeeRepository;
         this.mapperEmployee = mapperEmployee;
+        this.departmentSnapshotRepository = departmentSnapshotRepository;
     }
     @Override
     public EmployeeDto addOrUpdateEmployee(@NonNull EmployeeDto employeeDto) {
@@ -86,7 +91,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDto changeDepartmentOfEmployee(@NonNull Long employeeId, @NonNull Long newDepartmentId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NoSuchElementInDBException("Работник не найден"));
-        Boolean isDepartmentExist = departmentDataCaller.isDepartmentExist(newDepartmentId);
+        Boolean isDepartmentExist = departmentSnapshotRepository.isExist(newDepartmentId).orElse(false)
+                ? Boolean.valueOf(true) : departmentDataCaller.isDepartmentExist(newDepartmentId);
+
         if (isDepartmentExist != null && !isDepartmentExist) {
             throw new NoSuchElementInDBException("Департамент не найден");
         }
@@ -137,6 +144,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.countIdByDepartmentId(id);
     }
 
+    @KafkaListener(topics = "${kafka.topic.name}", containerFactory = "kafkaListenerContainerFactory")
+    public void saveDepartmentSnapshot(String departmentSnapshot) {
+        String[] data = departmentSnapshot.split("/");
+        if (departmentSnapshotRepository.isExist(Long.valueOf(data[0])).isPresent()) {
+            departmentSnapshotRepository.update(Long.valueOf(data[0]), Boolean.parseBoolean(data[1]));
+        } else {
+            departmentSnapshotRepository.save(Long.valueOf(data[0]), Boolean.parseBoolean(data[1]));
+        }
+    }
+
     private Set<ConstraintViolation<EmployeeDto>> validateOrThrow(EmployeeDto employeeDto) {
         Set<ConstraintViolation<EmployeeDto>> violations = validator.validate(employeeDto);
         if (!violations.isEmpty()) {
@@ -146,14 +163,15 @@ public class EmployeeServiceImpl implements EmployeeService {
                     append(exc.getPropertyPath()).append("; "));
             throw new ValidationException(String.valueOf(error));
         }
-        Boolean isDepartmentExist = departmentDataCaller.isDepartmentExist(employeeDto.getDepartmentId());
+        Boolean isDepartmentExist = departmentSnapshotRepository.isExist(employeeDto.getDepartmentId()).
+                orElse(false)
+                ? Boolean.valueOf(true) : departmentDataCaller.isDepartmentExist(employeeDto.getDepartmentId());
         if (!isDepartmentExist) {
             throw new ValidationException("Данного депаратамента не существует");
         }
         if (employeeDto.getFiredDate() != null) {
             throw new ValidationException("При создании или обновлении не должно быть даты увольнения");
         }
-//        TODO: добавил новое условие, а то если босса проапдейтить, то он конфликтует сам с собой
         if (!employeeRepository.getBossOfDepartment(employeeDto.getDepartmentId())
                 .equals(employeeRepository.findById(employeeDto.getId()).orElse(null)) &&
                 employeeDto.getBoss() && employeeRepository.countBossOfDepartment(employeeDto.getDepartmentId()) > 0) {

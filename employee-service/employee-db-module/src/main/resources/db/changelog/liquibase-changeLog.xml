@@ -2,11 +2,7 @@
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-    http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd ">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <changeSet id="GAbdulaev-1" author="GAbdulaev">
         <createTable tableName="employees">
@@ -40,6 +36,15 @@
             <column name="salary" type="money"/>
             <column name="is_boss" type="boolean"/>
             <column name="department_id" type="bigint"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="GAbdulaev-2" author="GAbdulaev">
+        <createTable tableName="department_snapshot">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="department_id" type="bigint"/>
+            <column name="exist" type="boolean"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

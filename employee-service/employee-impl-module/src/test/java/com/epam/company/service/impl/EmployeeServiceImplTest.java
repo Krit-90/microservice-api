@@ -5,6 +5,7 @@ import com.epam.company.dto.JobTitle;
 import com.epam.company.dto.Sex;
 import com.epam.company.entity.Employee;
 import com.epam.company.exception.NoSuchElementInDBException;
+import com.epam.company.repository.DepartmentSnapshotRepository;
 import com.epam.company.repository.EmployeeRepository;
 import com.epam.company.util.DepartmentDataCaller;
 import com.epam.company.util.MapperEmployee;
@@ -21,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
 class EmployeeServiceImplTest {
@@ -56,6 +57,8 @@ class EmployeeServiceImplTest {
     private EmployeeDto testEmployeeDto;
     @Mock
     EmployeeRepository employeeRepository;
+    @Mock
+    DepartmentSnapshotRepository departmentSnapshotRepository;
     @Mock
     MapperEmployee mapperEmployee;
     @Mock
@@ -123,6 +126,13 @@ class EmployeeServiceImplTest {
         Exception exception = Assertions.assertThrows(NoSuchElementInDBException.class,
                 () -> employeeService.addOrUpdateEmployee(testEmployeeDto));
         Assertions.assertTrue(exception.getMessage().contains("Работник не найден"));
+    }
+
+    @Test
+    void removeDepartment() {
+        Mockito.when(employeeRepository.findById(DEPARTMENT_ID)).thenReturn(Optional.of(testEmployee));
+        employeeService.removeEmployee(DEPARTMENT_ID);
+        Mockito.verify(employeeRepository).deleteById(DEPARTMENT_ID);
     }
 
     @Test

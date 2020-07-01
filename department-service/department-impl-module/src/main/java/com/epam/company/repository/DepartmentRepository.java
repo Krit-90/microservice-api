@@ -60,7 +60,6 @@ public interface DepartmentRepository {
     })
     Optional<Department> findById(@Param("id") Long id);
 
-//   TODO: Когда вытаскиваю из бд, делаю привязку только к субдепартаментам а к хеад - нет, а то будет StackOverFlow
     @Select("Select * From departments Where head_department_id = #{headDepartmentId}")
     @Results({
             @Result(property = "id",
@@ -74,7 +73,7 @@ public interface DepartmentRepository {
     })
     List<Department> findByHeadDepartmentId(@Param("headDepartmentId") Long headDepartmentId);
 
-    @Delete("Delete * From departments Where id = #{id}")
+    @Delete("Delete From departments Where id = #{id}")
     void deleteById(@Param("id") Long id);
 
     @Select("Select count(id) From departments Where head_department_id isNull")

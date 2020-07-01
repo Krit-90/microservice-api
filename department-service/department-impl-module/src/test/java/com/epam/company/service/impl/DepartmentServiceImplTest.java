@@ -7,6 +7,7 @@ import com.epam.company.repository.DepartmentRepository;
 import com.epam.company.util.CustomSpringEventPublisher;
 import com.epam.company.util.EmployeeDataCaller;
 import com.epam.company.util.MapperDepartment;
+import com.epam.company.util.MessageProducer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,8 @@ class DepartmentServiceImplTest {
     DepartmentRepository departmentRepository;
     @Mock
     MapperDepartment mapperDepartment;
+    @Mock
+    MessageProducer messageProducer;
     @Mock
     EmployeeDataCaller employeeDataCaller;
     @Mock

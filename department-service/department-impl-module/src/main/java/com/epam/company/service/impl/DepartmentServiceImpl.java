@@ -12,10 +12,7 @@ import com.epam.company.repository.DepartmentFundRepository;
 import com.epam.company.repository.DepartmentJdbcRepository;
 import com.epam.company.repository.DepartmentRepository;
 import com.epam.company.service.DepartmentService;
-import com.epam.company.util.CustomSpringEvent;
-import com.epam.company.util.CustomSpringEventPublisher;
-import com.epam.company.util.EmployeeDataCaller;
-import com.epam.company.util.MapperDepartment;
+import com.epam.company.util.*;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,18 +33,21 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentFundRepository departmentFundRepository;
     private final CustomSpringEventPublisher customSpringEventPublisher;
     private final DepartmentJdbcRepository departmentJdbcRepository;
+    private final MessageProducer messageProducer;
+
 
     @Autowired
     public DepartmentServiceImpl(DepartmentRepository departmentRepository, MapperDepartment mapperDepartment,
                                  EmployeeDataCaller employeeDataCaller, DepartmentFundRepository departmentFundRepository,
                                  CustomSpringEventPublisher customSpringEventPublisher,
-                                 DepartmentJdbcRepository departmentJdbcRepository) {
+                                 DepartmentJdbcRepository departmentJdbcRepository, MessageProducer messageProducer) {
         this.departmentRepository = departmentRepository;
         this.mapperDepartment = mapperDepartment;
         this.employeeDataCaller = employeeDataCaller;
         this.departmentFundRepository = departmentFundRepository;
         this.customSpringEventPublisher = customSpringEventPublisher;
         this.departmentJdbcRepository = departmentJdbcRepository;
+        this.messageProducer = messageProducer;
     }
 
     @Transactional
@@ -68,6 +68,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department department = mapperDepartment.DtoReceiveToDepartment(departmentDtoReceive);
         department.setHeadDepartment(headDepartment);
         departmentRepository.save(department);
+        messageProducer.sendMessage(department.getId().toString() + "/" + true);
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.CREATE, department.getId(), LocalDateTime.now())));
         return mapperDepartment.departmentToDtoReceive(department);
@@ -101,6 +102,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         customSpringEventPublisher.publishEvent(new CustomSpringEvent<>(
                 new EventDepartment(null, EventTitle.DELETE, department.getId(), LocalDateTime.now())));
         departmentRepository.deleteById(id);
+        messageProducer.sendMessage(id + "/" + false);
     }
 
     @Override
